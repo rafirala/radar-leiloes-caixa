@@ -21,7 +21,9 @@ def main():
     pagina = modelo.replace("/*DADOS*/null", dados).replace("/*UFS*/null", ufs)
     (DOCS / "mapa.html").write_text(pagina, encoding="utf-8")
     completo = ('<!doctype html>\n<html lang="pt-BR">\n<head>\n<meta charset="utf-8">\n'
-                '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n</head>\n<body>\n'
+                '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+                # no site publicado dá para carregar a folha de estilo completa do Leaflet (posiciona as peças do mapa de ruas)
+                '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">\n</head>\n<body>\n'
                 + pagina + "\n</body>\n</html>\n")
     (DOCS / "index.html").write_text(completo, encoding="utf-8")
     print(f"ok -> docs/mapa.html ({len(pagina) / 1024:.0f} KB)")
