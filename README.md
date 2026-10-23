@@ -31,11 +31,19 @@ Se o imóvel está ocupado, se há dívidas de IPTU ou de condomínio e quem pag
 
 ## Como atualizar
 
-A Caixa protege o site contra downloads automáticos, então a lista é baixada à mão, pelo navegador, uma por estado:
-`https://venda-imoveis.caixa.gov.br/listaweb/Lista_imoveis_PR.csv` (troque PR por SC ou SP), salva em `dados/bruto/`.
+Todo dia às 06:00 o `src/baixar_caixa.py` pede as três listas oficiais, uma requisição simples por estado:
+`https://venda-imoveis.caixa.gov.br/listaweb/Lista_imoveis_PR.csv` (e SC, SP), salvas em `dados/bruto/`.
+A Caixa protege o site contra robôs; se a resposta vier da proteção e não da planilha, o arquivo antigo fica e nada
+é publicado. A ferramenta não tenta contornar essa proteção.
+
+Às 06:05 o `src/publicar_auto.py` confere se a lista é mais nova que a publicada, roda as etapas abaixo e publica
+no GitHub Pages. Se o total de imóveis cair mais de 30% de um dia para o outro, ele não publica (algo veio errado).
+
+Para rodar à mão:
 
 ```bash
 pip install -r requirements.txt
+python src/baixar_caixa.py    # baixa as listas -> dados/bruto/
 python src/ler_caixa.py       # lê as planilhas -> dados/imoveis.csv
 python src/geocodificar.py    # localiza (1 consulta por segundo; usa cache)
 python src/oportunidades.py   # notas -> docs/dados_mapa.json
@@ -52,6 +60,6 @@ Lista de imóveis: [Caixa Econômica Federal](https://venda-imoveis.caixa.gov.br
 
 ## English summary
 
-**Caixa auction radar.** A map and ranking of the ~3,300 properties that Brazil's largest mortgage bank (Caixa) is selling through auctions and direct sales in three states, each with an explained opportunity score: discount versus the bank's own appraisal, price per m² versus the city average (FipeZAP index), mortgage eligibility and sale type. Built with Python (parsing the official lists, geocoding with OpenStreetMap/Nominatim in rate-limited phases with state-boundary checks) and a Leaflet dashboard. The bank blocks automated downloads, so lists are downloaded manually; the tool never bypasses that protection. A high score is an invitation to look, not investment advice.
+**Caixa auction radar.** A map and ranking of the ~3,300 properties that Brazil's largest mortgage bank (Caixa) is selling through auctions and direct sales in three states, each with an explained opportunity score: discount versus the bank's own appraisal, price per m² versus the city average (FipeZAP index), mortgage eligibility and sale type. Built with Python (parsing the official lists, geocoding with OpenStreetMap/Nominatim in rate-limited phases with state-boundary checks) and a Leaflet dashboard. The official lists are fetched once a day with one plain request per state and the map republishes itself when a newer list arrives (with a sanity check that blocks publishing if the count drops more than 30%); if the bank's bot protection answers instead of the file, the run stops: the tool never bypasses that protection. A high score is an invitation to look, not investment advice.
 
 *Autor / Author:* Rafael Irala · [linkedin.com/in/rafael-irala](https://www.linkedin.com/in/rafael-irala/)
