@@ -16,7 +16,7 @@ import requests
 
 RAIZ = Path(__file__).resolve().parent.parent
 CACHE = RAIZ / "dados" / "geocache.json"
-UA = {"User-Agent": "mapa-leiloes-imoveis/0.1 (projeto pessoal de estudo de dados)"}
+UA = {"User-Agent": "radar-leiloes-caixa/0.1 (+https://github.com/rafirala/radar-leiloes-caixa)"}
 URL = "https://nominatim.openstreetmap.org/search"
 
 

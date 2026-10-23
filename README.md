@@ -2,7 +2,7 @@
 
 **Mapa e ranking dos imóveis à venda pela Caixa (leilão, licitação e venda direta) no Paraná, em Santa Catarina e em São Paulo, com uma nota de oportunidade explicada para cada imóvel.**
 
-O dashboard está em `docs/index.html`: filtre por estado, cidade, tipo, preço e financiamento, veja os imóveis no mapa e abra cada um no site da Caixa.
+Projeto independente, sem vínculo com a Caixa Econômica Federal. O dashboard está em `docs/index.html`: filtre por estado, cidade, tipo, preço e financiamento, veja os imóveis no mapa e abra cada um no site da Caixa.
 
 ## O que a ferramenta faz
 
@@ -12,8 +12,12 @@ O dashboard está em `docs/index.html`: filtre por estado, cidade, tipo, preço 
    - até 40 pontos: desconto sobre a avaliação da própria Caixa;
    - até 15: preço do m² contra a média da cidade no FipeZAP (contexto, porque a média da cidade inclui bairros nobres e prédios novos);
    - 15: aceita financiamento;
-   - até 15: modalidade (venda direta é mais simples que leilão).
+   - até 15: modalidade. **Venda direta**: compra imediata pelo preço anunciado. **Licitação aberta**: concorrência com propostas em data marcada. **Leilão SFI**: imóvel retomado de financiamento não pago (alienação fiduciária), cujo primeiro leilão costuma partir do valor de avaliação.
 4. **Marca** os 5% de maior nota como destaque e os casos fora da curva (área acima de 300 m² ou preço acima de R$ 1 milhão) como "conferir".
+
+**Sobre a nota:** os pesos são simples e visíveis para que você possa discordar deles; não foram validados contra preços reais de arremate ou de revenda. Financiamento e modalidade (30 dos 85 pontos) medem **facilidade de compra**, não preço bom. O desconto parte da avaliação da própria Caixa, que pode estar acima ou abaixo do mercado. "Destaque" é um corte relativo: sempre haverá 5% no topo, mesmo numa lista fraca.
+
+**Sobre o mapa:** os pontos com endereço exato estão no lugar certo; os demais ficam no centro do bairro ou da cidade, espalhados de propósito para não se empilharem, e o balão de cada um avisa "local aproximado".
 
 ## Retrato da lista de 22/10/2026
 

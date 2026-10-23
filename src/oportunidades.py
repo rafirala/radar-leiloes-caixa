@@ -1,4 +1,4 @@
-"""Dá uma nota de oportunidade (0 a 100) a cada imóvel, com o motivo explicado, e gera os dados do mapa.
+"""Dá uma nota de oportunidade (0 a 85) a cada imóvel, com o motivo explicado, e gera os dados do mapa.
 
 Nota (pesos simples e visíveis, para o usuário entender e discordar):
 - até 40 pts: desconto sobre a avaliação da própria Caixa (60% ou mais = 40 pts). Compara o imóvel com ele mesmo.
