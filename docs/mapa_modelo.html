@@ -185,7 +185,7 @@ function desenhar(ajustar) {
 function vizinhanca(i) {
   if (i.precisao === "endereco" && i.lat != null)
     return `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${i.lat},${i.lon}`;
-  const q = `${(i.endereco || "").replace(/,?\s*(apto|ap|bl|bloco|casa|lote|lt|qd|quadra|vg)\b.*$/i, "")}, ${i.bairro}, ${i.cidade} - ${i.uf}`;
+  const q = `${i.endereco_busca || i.endereco || ""}, ${i.cidade} - ${i.uf}`;  // endereço já tratado no Python (sem "N.", sem complemento, abreviações expandidas)
   return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
 }
 

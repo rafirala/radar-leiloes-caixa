@@ -15,6 +15,7 @@ Uso: python src/oportunidades.py
 import csv
 import hashlib
 import json
+import re
 import unicodedata
 from pathlib import Path
 
@@ -39,6 +40,30 @@ def mercado_fipezap():
         if linhas:
             out[norm(aba)] = (linhas[-1][1].strftime("%m/%Y"), round(linhas[-1][17]))
     return out
+
+
+ABREV = {"AV": "Avenida", "AVENIDA": "Avenida", "R": "Rua", "RUA": "Rua", "AL": "Alameda", "TV": "Travessa", "TRAV": "Travessa",
+         "EST": "Estrada", "ESTR": "Estrada", "ROD": "Rodovia", "PC": "Praça", "PCA": "Praça", "PRACA": "Praça", "LGO": "Largo",
+         "VL": "Vila", "SERV": "Servidão", "ESTRADA": "Estrada", "RODOVIA": "Rodovia", "TRAVESSA": "Travessa", "ALAMEDA": "Alameda"}
+MINUSC = {"DA", "DAS", "DE", "DO", "DOS", "E"}
+
+
+def endereco_busca(e):
+    """'AV ALFREDO RAVANELI, N. 3409, APTO 12' -> 'Avenida Alfredo Ravaneli, 3409' (para buscar no Google Maps).
+    Tira 'N.', complementos (apto, bloco, lote...) e expande as abreviações da Caixa; 'SN' (sem número) fica sem número."""
+    partes = [p.strip() for p in (e or "").upper().split(",")]
+    if not partes or not partes[0]:
+        return ""
+    palavras = partes[0].replace(".", " ").split()
+    if palavras and palavras[0] in ABREV:
+        palavras[0] = ABREV[palavras[0]]
+    rua = " ".join(w if w[0].isupper() and not w.isupper() else (w.lower() if w in MINUSC else w.capitalize()) for w in palavras)
+    num = ""
+    if len(partes) > 1:
+        m = re.match(r"N\.?\s*(\d+)", partes[1])
+        if m:
+            num = m.group(1)
+    return f"{rua}, {num}" if num else rua
 
 
 def nota(x, merc):
@@ -80,7 +105,7 @@ def main():
             h = int(hashlib.md5(x["id"].encode()).hexdigest(), 16)
             lat += ((h % 1000) / 1000 - 0.5) * raio
             lon += (((h // 1000) % 1000) / 1000 - 0.5) * raio
-        saida.append({"id": x["id"], "uf": x["uf"], "cidade": x["cidade"].title(), "bairro": x["bairro"].title(), "endereco": x["endereco"].strip(),
+        saida.append({"id": x["id"], "uf": x["uf"], "cidade": x["cidade"].title(), "bairro": x["bairro"].title(), "endereco": x["endereco"].strip(), "endereco_busca": endereco_busca(x["endereco"]),
                       "tipo": x["tipo"], "preco": num("preco"), "avaliacao": num("avaliacao"), "desconto": num("desconto_pct"),
                       "area": num("area_privativa") or num("area_total"), "quartos": num("quartos"), "preco_m2": num("preco_m2"),
                       "mercado_m2": x["mercado_m2"], "financiamento": x["financiamento"] == "True", "modalidade": x["modalidade"],
