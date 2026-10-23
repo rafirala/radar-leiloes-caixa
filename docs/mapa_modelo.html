@@ -48,7 +48,7 @@ select:focus-visible,input:focus-visible,button:focus-visible,a:focus-visible{ou
 .item .preco{font:500 14px var(--mono);font-variant-numeric:tabular-nums}
 .item ul{margin:2px 0 0;padding-left:18px;font-size:13px;color:var(--muted)}
 .pill{font:600 11px var(--mono);letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid currentColor;margin-left:6px}
-.pill.d{color:var(--dest)} .pill.c{color:var(--conf);cursor:help}
+.pill.d{color:var(--dest)} .pill.c{color:var(--conf);cursor:help} .pill.s{color:var(--ink)}
 .item a{color:var(--dest);font-weight:600;font-size:14px}
 .metodo{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
 .metodo h3{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
@@ -167,7 +167,7 @@ function desenhar(ajustar) {
     const m = L.circleMarker([i.lat, i.lon], { radius: i.destaque ? 7 : 4.5, weight: i.destaque ? 2 : 0.5,
       color: i.destaque ? cor("--dest") : cor("--card"), fillColor: cor(faixa(i.nota)[1]), fillOpacity: .95 });
     m.bindTooltip(`<b>${i.nota}</b> · ${i.tipo} · ${i.bairro}, ${i.cidade}<br>${brl(i.preco)} · ${(i.desconto || 0).toFixed(0)}% abaixo da avaliação${i.precisao === "endereco" ? "" : "<br><i>local aproximado: centro do " + (i.precisao === "bairro" ? "bairro" : "município") + "</i>"}`);
-    m.on("click", () => { sel = i.id; lista(F); document.querySelector(`[data-id="${i.id}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" }); });
+    m.on("click", () => { sel = i.id; lista(F); $("lista").scrollTop = 0; document.querySelector(`[data-id="${i.id}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" }); });
     camPontos.addLayer(m);
   });
   camPontos.addTo(mapa);
@@ -189,10 +189,13 @@ function motivoConferir(i) {
 }
 
 function lista(F) {
-  const top = [...F].sort((a, b) => b.nota - a.nota).slice(0, 60);
+  let top = [...F].sort((a, b) => b.nota - a.nota).slice(0, 60);
+  // o imóvel clicado no mapa vai para o topo, mesmo fora das 60 melhores notas
+  const escolhido = sel && IM.find(x => x.id === sel);
+  if (escolhido) top = [escolhido, ...top.filter(x => x.id !== sel)];
   $("lista").innerHTML = `<h2>Melhores notas no recorte</h2>` + (top.length ? "" : `<p>Nenhum imóvel com esses filtros.</p>`) + top.map(i => `
     <article class="item${sel === i.id ? " sel" : ""}" data-id="${i.id}" tabindex="0">
-      <div class="topo"><span class="onde">${i.tipo} · ${i.bairro}, ${i.cidade} – ${i.uf}${i.destaque ? '<span class="pill d">destaque</span>' : ""}${i.conferir ? `<span class="pill c" tabindex="0" title="${motivoConferir(i)}">conferir</span>` : ""}</span><span class="nota">${i.nota}</span></div>
+      <div class="topo"><span class="onde">${i.tipo} · ${i.bairro}, ${i.cidade} – ${i.uf}${sel === i.id ? '<span class="pill s">selecionado</span>' : ""}${i.destaque ? '<span class="pill d">destaque</span>' : ""}${i.conferir ? `<span class="pill c" tabindex="0" title="${motivoConferir(i)}">conferir</span>` : ""}</span><span class="nota">${i.nota}</span></div>
       <span class="preco">${brl(i.preco)} · avaliado em ${brl(i.avaliacao)}${i.area ? " · " + i.area.toLocaleString("pt-BR") + " m²" : ""}${i.quartos ? " · " + i.quartos + " qto(s)" : ""}</span>
       <ul>${i.motivos.map(m => `<li>${m}</li>`).join("")}</ul>
       <a href="${i.link}" target="_blank" rel="noopener">Ver na Caixa</a>
