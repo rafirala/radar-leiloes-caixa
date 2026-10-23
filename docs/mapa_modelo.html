@@ -50,6 +50,7 @@ select:focus-visible,input:focus-visible,button:focus-visible,a:focus-visible{ou
 .pill{font:600 11px var(--mono);letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid currentColor;margin-left:6px}
 .pill.d{color:var(--dest)} .pill.c{color:var(--conf);cursor:help} .pill.s{color:var(--ink)}
 .item a{color:var(--dest);font-weight:600;font-size:14px}
+.item .links{display:flex;flex-wrap:wrap;gap:16px}
 .metodo{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
 .metodo h3{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
 .metodo ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:14px}
@@ -180,6 +181,14 @@ function desenhar(ajustar) {
     `<span>${F.length - comPos.length ? (F.length - comPos.length) + " sem localização" : ""}</span>`;
 }
 
+// Google Maps: Street View na coordenada quando o endereço exato foi achado; senão, busca pelo endereço escrito
+function vizinhanca(i) {
+  if (i.precisao === "endereco" && i.lat != null)
+    return `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${i.lat},${i.lon}`;
+  const q = `${(i.endereco || "").replace(/,?\s*(apto|ap|bl|bloco|casa|lote|lt|qd|quadra|vg)\b.*$/i, "")}, ${i.bairro}, ${i.cidade} - ${i.uf}`;
+  return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+}
+
 // por que o imóvel ganhou "conferir": aparece ao passar o mouse na etiqueta
 function motivoConferir(i) {
   const m = [];
@@ -198,7 +207,7 @@ function lista(F) {
       <div class="topo"><span class="onde">${i.tipo} · ${i.bairro}, ${i.cidade} – ${i.uf}${sel === i.id ? '<span class="pill s">selecionado</span>' : ""}${i.destaque ? '<span class="pill d">destaque</span>' : ""}${i.conferir ? `<span class="pill c" tabindex="0" title="${motivoConferir(i)}">conferir</span>` : ""}</span><span class="nota">${i.nota}</span></div>
       <span class="preco">${brl(i.preco)} · avaliado em ${brl(i.avaliacao)}${i.area ? " · " + i.area.toLocaleString("pt-BR") + " m²" : ""}${i.quartos ? " · " + i.quartos + " qto(s)" : ""}</span>
       <ul>${i.motivos.map(m => `<li>${m}</li>`).join("")}</ul>
-      <a href="${i.link}" target="_blank" rel="noopener">Ver na Caixa</a>
+      <span class="links"><a href="${i.link}" target="_blank" rel="noopener">Ver na Caixa</a><a href="${vizinhanca(i)}" target="_blank" rel="noopener" title="${i.precisao === "endereco" ? "Abre o Street View na frente do imóvel" : "Abre o Google Maps buscando o endereço; arraste o bonequinho para a rua"}">Ver vizinhança</a></span>
     </article>`).join("");
   document.querySelectorAll(".item").forEach(el => el.addEventListener("click", e => {
     if (e.target.tagName === "A") return;

@@ -80,7 +80,7 @@ def main():
             h = int(hashlib.md5(x["id"].encode()).hexdigest(), 16)
             lat += ((h % 1000) / 1000 - 0.5) * raio
             lon += (((h // 1000) % 1000) / 1000 - 0.5) * raio
-        saida.append({"id": x["id"], "uf": x["uf"], "cidade": x["cidade"].title(), "bairro": x["bairro"].title(),
+        saida.append({"id": x["id"], "uf": x["uf"], "cidade": x["cidade"].title(), "bairro": x["bairro"].title(), "endereco": x["endereco"].strip(),
                       "tipo": x["tipo"], "preco": num("preco"), "avaliacao": num("avaliacao"), "desconto": num("desconto_pct"),
                       "area": num("area_privativa") or num("area_total"), "quartos": num("quartos"), "preco_m2": num("preco_m2"),
                       "mercado_m2": x["mercado_m2"], "financiamento": x["financiamento"] == "True", "modalidade": x["modalidade"],
