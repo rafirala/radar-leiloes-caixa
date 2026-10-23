@@ -1,0 +1,9 @@
+dados/bruto/
+dados/imoveis.csv
+dados/imoveis_geo.csv
+dados/geocache.json
+dados/*.log
+docs/mapa.html
+__pycache__/
+*.pyc
+PLANO.md

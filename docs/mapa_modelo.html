@@ -1,0 +1,204 @@
+<title>Radar de Leilões Caixa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: filtros numa faixa → números do recorte → mapa à esquerda e lista das melhores à direita → como a nota é feita. */
+:root{
+  --bg:#f2f3f0; --card:#fcfcfb; --ink:#1b1f23; --muted:#5d6670; --line:#d9ddd6; --uf:#e4e7e1; --ufborda:#b9bfb6;
+  --n1:#d9e8d3; --n2:#9cc58f; --n3:#4f9a5c; --n4:#1b6b45; --dest:#c4432f; --conf:#a17a12;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif; --body:"Source Sans 3","Segoe UI",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141719; --card:#1a1d1f; --ink:#e8eae6; --muted:#9aa3ab; --line:#2e3439; --uf:#20262a; --ufborda:#3b4449;
+  --n1:#2c3d2e; --n2:#3f6b45; --n3:#5fa36b; --n4:#9fd49a; --dest:#e0705c; --conf:#c99a2e; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141719; --card:#1a1d1f; --ink:#e8eae6; --muted:#9aa3ab; --line:#2e3439; --uf:#20262a; --ufborda:#3b4449;
+  --n1:#2c3d2e; --n2:#3f6b45; --n3:#5fa36b; --n4:#9fd49a; --dest:#e0705c; --conf:#c99a2e; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);margin:0}
+.wrap{max-width:1280px;margin:0 auto;padding-inline:16px;padding-block:24px 48px;display:grid;gap:18px}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+h1{font:800 clamp(28px,4.5vw,46px)/1.05 var(--display);font-stretch:80%;margin:6px 0 8px;text-wrap:balance}
+.lede{margin:0;color:var(--muted);max-width:72ch}
+.filtros{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:end;padding:14px 16px;background:var(--card);border:1px solid var(--line);border-radius:10px}
+.campo{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+select,input[type=number]{font:600 15px var(--body);padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);max-width:100%}
+input[type=number]{width:150px}
+.check{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--ink);padding-bottom:8px}
+select:focus-visible,input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--dest);outline-offset:2px}
+.nums{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:800px){.nums{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.num{padding:12px 14px;background:var(--card);border:1px solid var(--line);border-radius:10px}
+.num b{display:block;font:800 30px/1.1 var(--display);font-stretch:85%;font-variant-numeric:tabular-nums}
+.num span{font-size:13px;color:var(--muted)}
+.principal{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px}
+@media (max-width:950px){.principal{grid-template-columns:1fr}}
+.painel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;min-width:0}
+#mapa{height:620px;border-radius:8px;background:var(--bg)}
+.legenda{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted);margin-top:10px}
+.legenda span{display:inline-flex;align-items:center;gap:6px}
+.legenda i{width:12px;height:12px;border-radius:50%;display:inline-block}
+.lista{max-height:680px;overflow:auto;display:grid;gap:10px;align-content:start}
+.lista h2{font:700 19px/1.2 var(--display);font-stretch:85%;margin:0}
+.item{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:grid;gap:4px;background:var(--bg);cursor:pointer}
+.item.sel{border-color:var(--dest)}
+.item .topo{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.item .nota{font:700 20px var(--mono);font-variant-numeric:tabular-nums}
+.item .onde{font-weight:600}
+.item .preco{font:500 14px var(--mono);font-variant-numeric:tabular-nums}
+.item ul{margin:2px 0 0;padding-left:18px;font-size:13px;color:var(--muted)}
+.pill{font:600 11px var(--mono);letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid currentColor;margin-left:6px}
+.pill.d{color:var(--dest)} .pill.c{color:var(--conf)}
+.item a{color:var(--dest);font-weight:600;font-size:14px}
+.metodo{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.metodo h3{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.metodo ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:14px}
+.rodape{font-size:13px;color:var(--muted);margin:0}
+/* Leaflet: só o necessário (a folha de estilo da biblioteca não pode ser carregada de fora) */
+.leaflet-container{overflow:hidden;position:relative;font:13px var(--body);outline:0}
+.leaflet-pane,.leaflet-map-pane canvas,.leaflet-map-pane svg,.leaflet-zoom-box{position:absolute;left:0;top:0}
+.leaflet-pane{z-index:400}.leaflet-overlay-pane{z-index:400}.leaflet-marker-pane{z-index:600}.leaflet-tooltip-pane{z-index:650}
+.leaflet-top,.leaflet-bottom{position:absolute;z-index:1000;pointer-events:none}.leaflet-top{top:0}.leaflet-bottom{bottom:0}.leaflet-left{left:0}.leaflet-right{right:0}
+.leaflet-control{float:left;clear:both;position:relative;z-index:800;pointer-events:auto;margin:10px}
+.leaflet-bar{border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.leaflet-bar a{display:block;width:30px;height:30px;line-height:28px;text-align:center;text-decoration:none;font:700 18px var(--body);background:var(--card);color:var(--ink)}
+.leaflet-bar a+a{border-top:1px solid var(--line)}
+.leaflet-control-attribution{font-size:11px;color:var(--muted);background:var(--card);padding:0 6px;margin:0}
+.leaflet-control-attribution a{color:var(--muted)}
+.leaflet-tooltip{position:absolute;padding:6px 8px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:6px;white-space:nowrap;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.leaflet-interactive{cursor:pointer}
+.leaflet-zoom-animated{transform-origin:0 0}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Ferramenta pessoal · imóveis à venda pela Caixa · PR, SC e SP</p>
+    <h1>Radar de leilões: onde estão as oportunidades</h1>
+    <p class="lede" id="lede"></p>
+  </header>
+
+  <div class="filtros" role="group" aria-label="Filtros">
+    <label class="campo" for="f-uf">Estado<select id="f-uf"><option value="">Todos</option><option>PR</option><option>SC</option><option>SP</option></select></label>
+    <label class="campo" for="f-cidade">Cidade<select id="f-cidade"></select></label>
+    <label class="campo" for="f-tipo">Tipo<select id="f-tipo"></select></label>
+    <label class="campo" for="f-preco">Preço até (R$)<input id="f-preco" type="number" min="0" step="10000" placeholder="sem limite"></label>
+    <label class="check" for="f-fin"><input id="f-fin" type="checkbox"> Só com financiamento</label>
+    <label class="check" for="f-dest"><input id="f-dest" type="checkbox"> Só destaques</label>
+  </div>
+
+  <section class="nums" id="nums" aria-live="polite"></section>
+
+  <div class="principal">
+    <section class="painel">
+      <div id="mapa" role="img" aria-label="Mapa dos imóveis, coloridos pela nota de oportunidade"></div>
+      <div class="legenda" id="legenda"></div>
+    </section>
+    <section class="painel lista" id="lista" aria-label="Melhores oportunidades no recorte"></section>
+  </div>
+
+  <section class="painel metodo" aria-label="Como a nota é feita">
+    <div><h3>Como a nota é feita (0 a 85)</h3><ul>
+      <li><b>Até 40:</b> desconto sobre a avaliação da própria Caixa (60% ou mais vale 40).</li>
+      <li><b>Até 15:</b> preço do m² contra a média da cidade no FipeZAP (só casas e apartamentos em cidades cobertas).</li>
+      <li><b>15:</b> aceita financiamento.</li>
+      <li><b>Até 15:</b> modalidade. Venda direta 15, licitação aberta 8, leilão SFI 0 (costuma começar pelo valor de avaliação).</li></ul></div>
+    <div><h3>Como ler</h3><ul>
+      <li><b>Destaque:</b> os 5% de maior nota no conjunto.</li>
+      <li><b>Conferir:</b> área acima de 300 m² ou preço acima de R$ 1 milhão. Pode ser ótimo ou erro de cadastro.</li>
+      <li>A média da cidade inclui bairros nobres e prédios novos; o imóvel da Caixa costuma ser popular. Por isso esse item pesa pouco.</li></ul></div>
+    <div><h3>O que a planilha não diz</h3><ul>
+      <li>Se o imóvel está ocupado, se há dívidas de IPTU ou condomínio e quem paga cada custo. Isso está no edital de cada imóvel.</li>
+      <li>A localização vem do endereço; quando ele não é encontrado, o ponto vai para o centro do bairro ou da cidade.</li>
+      <li>Nota alta é um convite para olhar o imóvel, não uma recomendação de compra.</li></ul></div>
+  </section>
+  <p class="rodape" id="rodape"></p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const D = /*DADOS*/null, UFS = /*UFS*/null;
+const $ = s => document.getElementById(s);
+const cor = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const brl = v => v == null ? "—" : "R$ " + Math.round(v).toLocaleString("pt-BR");
+const FAIXAS = [[60, "--n4", "60 ou mais"], [45, "--n3", "45 a 59"], [30, "--n2", "30 a 44"], [0, "--n1", "abaixo de 30"]];
+const faixa = n => FAIXAS.find(f => n >= f[0]);
+const IM = D.imoveis;
+let sel = null;
+
+function opcoes(id, valores, todos) { $(id).innerHTML = `<option value="">${todos}</option>` + valores.map(v => `<option>${v}</option>`).join(""); }
+function montarFiltros() {
+  const uf = $("f-uf").value, atual = $("f-cidade").value;
+  const cidades = [...new Set(IM.filter(i => !uf || i.uf === uf).map(i => i.cidade))].sort((a, b) => a.localeCompare(b, "pt"));
+  opcoes("f-cidade", cidades, "Todas"); if (cidades.includes(atual)) $("f-cidade").value = atual;
+}
+opcoes("f-tipo", [...new Set(IM.map(i => i.tipo))].sort(), "Todos");
+
+function filtrados() {
+  const uf = $("f-uf").value, cid = $("f-cidade").value, tipo = $("f-tipo").value, pmax = +$("f-preco").value || Infinity;
+  return IM.filter(i => (!uf || i.uf === uf) && (!cid || i.cidade === cid) && (!tipo || i.tipo === tipo) && (i.preco || 0) <= pmax
+    && (!$("f-fin").checked || i.financiamento) && (!$("f-dest").checked || i.destaque));
+}
+
+const mapa = L.map("mapa", { preferCanvas: true, scrollWheelZoom: true, attributionControl: true }).setView([-24.2, -49.5], 6);
+mapa.attributionControl.setPrefix(false).addAttribution("Contornos: IBGE");
+let camUF, camPontos;
+function desenharUF() {
+  if (camUF) camUF.remove();
+  camUF = L.geoJSON(UFS, { interactive: false, style: { color: cor("--ufborda"), weight: 1, fillColor: cor("--uf"), fillOpacity: 1 } }).addTo(mapa);
+  camUF.bringToBack();
+}
+
+function desenhar(ajustar) {
+  const F = filtrados();
+  const desc = F.map(i => i.desconto || 0).sort((a, b) => a - b);
+  const med = desc.length ? desc[Math.floor(desc.length / 2)] : 0;
+  $("nums").innerHTML = [[F.length.toLocaleString("pt-BR"), "imóveis no recorte"], [F.filter(i => i.destaque).length, "destaques"],
+    [med.toFixed(0) + "%", "desconto mediano sobre a avaliação"], [F.filter(i => i.financiamento).length, "aceitam financiamento"]]
+    .map(([b, s]) => `<div class="num"><b>${b}</b><span>${s}</span></div>`).join("");
+
+  if (camPontos) camPontos.remove();
+  camPontos = L.layerGroup();
+  const comPos = F.filter(i => i.lat != null);
+  [...comPos].sort((a, b) => a.nota - b.nota).forEach(i => {
+    const m = L.circleMarker([i.lat, i.lon], { radius: i.destaque ? 7 : 4.5, weight: i.destaque ? 2 : 0.5,
+      color: i.destaque ? cor("--dest") : cor("--card"), fillColor: cor(faixa(i.nota)[1]), fillOpacity: .95 });
+    m.bindTooltip(`<b>${i.nota}</b> · ${i.tipo} · ${i.bairro}, ${i.cidade}<br>${brl(i.preco)} · ${(i.desconto || 0).toFixed(0)}% abaixo da avaliação${i.precisao === "endereco" ? "" : "<br><i>local aproximado: centro do " + (i.precisao === "bairro" ? "bairro" : "município") + "</i>"}`);
+    m.on("click", () => { sel = i.id; lista(F); document.querySelector(`[data-id="${i.id}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" }); });
+    camPontos.addLayer(m);
+  });
+  camPontos.addTo(mapa);
+  if (ajustar) { const filtro = $("f-uf").value || $("f-cidade").value;
+    if (filtro && comPos.length) mapa.fitBounds(L.latLngBounds(comPos.map(i => [i.lat, i.lon])).pad(0.1), { maxZoom: 13 });
+    else mapa.fitBounds(camUF.getBounds(), { padding: [10, 10] }); }
+  lista(F);
+  $("legenda").innerHTML = FAIXAS.map(f => `<span><i style="background:var(${f[1]})"></i>nota ${f[2]}</span>`).join("") +
+    `<span><i style="background:transparent;border:2px solid var(--dest)"></i>destaque</span>` +
+    `<span>${F.length - comPos.length ? (F.length - comPos.length) + " sem localização" : ""}</span>`;
+}
+
+function lista(F) {
+  const top = [...F].sort((a, b) => b.nota - a.nota).slice(0, 60);
+  $("lista").innerHTML = `<h2>Melhores notas no recorte</h2>` + (top.length ? "" : `<p>Nenhum imóvel com esses filtros.</p>`) + top.map(i => `
+    <article class="item${sel === i.id ? " sel" : ""}" data-id="${i.id}" tabindex="0">
+      <div class="topo"><span class="onde">${i.tipo} · ${i.bairro}, ${i.cidade} – ${i.uf}${i.destaque ? '<span class="pill d">destaque</span>' : ""}${i.conferir ? '<span class="pill c">conferir</span>' : ""}</span><span class="nota">${i.nota}</span></div>
+      <span class="preco">${brl(i.preco)} · avaliado em ${brl(i.avaliacao)}${i.area ? " · " + i.area.toLocaleString("pt-BR") + " m²" : ""}${i.quartos ? " · " + i.quartos + " qto(s)" : ""}</span>
+      <ul>${i.motivos.map(m => `<li>${m}</li>`).join("")}</ul>
+      <a href="${i.link}" target="_blank" rel="noopener">Ver na Caixa</a>
+    </article>`).join("");
+  document.querySelectorAll(".item").forEach(el => el.addEventListener("click", e => {
+    if (e.target.tagName === "A") return;
+    const i = IM.find(x => x.id === el.dataset.id); if (i?.lat != null) mapa.setView([i.lat, i.lon], 15); sel = i.id;
+    document.querySelectorAll(".item").forEach(x => x.classList.toggle("sel", x === el));
+  }));
+}
+
+$("lede").textContent = `${IM.length.toLocaleString("pt-BR")} imóveis da lista oficial da Caixa de ${D.data_lista}, cada um com uma nota de oportunidade explicada. Filtre, passe o mouse nos pontos e abra o imóvel no site da Caixa.`;
+$("rodape").textContent = `Lista da Caixa de ${D.data_lista} · preço de mercado: FipeZAP (FIPE/Zap) · localização: OpenStreetMap (Nominatim) · ferramenta de estudo de Rafael Irala.`;
+["f-uf"].forEach(id => $(id).addEventListener("change", () => { montarFiltros(); desenhar(true); }));
+["f-cidade", "f-tipo", "f-fin", "f-dest"].forEach(id => $(id).addEventListener("change", () => desenhar(true)));
+$("f-preco").addEventListener("input", () => desenhar(false));
+const reTema = () => { desenharUF(); desenhar(false); };
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", reTema);
+new MutationObserver(reTema).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+montarFiltros(); desenharUF(); desenhar(true);
+</script>
