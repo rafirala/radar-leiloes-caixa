@@ -51,6 +51,8 @@ def main():
     q_cidade = lambda x: f"{x['cidade'].title()}, {x['uf']}"
     q_bairro = lambda x: f"{x['bairro'].title()}, {x['cidade'].title()}, {x['uf']}"
     q_end = lambda x: f"{limpa_endereco(x['endereco'])}, {x['cidade'].title()}, {x['uf']}"
+    from oportunidades import endereco_busca  # endereço tratado: sem "N.", abreviações expandidas
+    q_end2 = lambda x: f"{endereco_busca(x['endereco'])}, {x['cidade'].title()}, {ESTADO.get(x['uf'], x['uf'])}, Brasil"
     destaques = set()
     mapa = RAIZ / "docs" / "dados_mapa.json"
     if mapa.exists():
@@ -68,7 +70,8 @@ def main():
         for x in imoveis:
             x["lat"] = x["lon"] = ""
             x["precisao"] = "nao_achado"
-            for nivel, q in (("endereco", q_end(x)), ("bairro", q_bairro(x)), ("cidade", q_cidade(x)), ("cidade", q_cidade2(x))):
+            for nivel, q in (("endereco", q_end2(x)), ("endereco", q_end(x)), ("bairro", q_bairro(x)), ("cidade", q_cidade(x)),
+                             ("cidade", q_cidade2(x))):
                 pos = cache.get(q)
                 if dentro(x["uf"], pos):
                     x["lat"], x["lon"], x["precisao"] = pos[0], pos[1], nivel
@@ -83,6 +86,7 @@ def main():
     # fases: cidades (rápido, o mapa já funciona) -> bairros -> endereço exato só dos destaques
     fases = [("cidades", {q_cidade(x) for x in imoveis}), ("bairros", {q_bairro(x) for x in imoveis}),
              ("endereços dos destaques", {q_end(x) for x in imoveis if x["id"] in destaques}),
+             ("endereços tratados dos destaques", {q_end2(x) for x in imoveis if x["id"] in destaques}),
              ("cidades com nome do estado (homônimos)", {q_cidade2(x) for x in imoveis
                                                           if not dentro(x["uf"], cache.get(q_cidade(x)))})]
     for nome, consultas in fases:
